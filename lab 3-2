@@ -1,0 +1,126 @@
+#include <windows.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+#include <math.h>
+
+double pending_time = 0;
+
+double secant_method(double x1, double x2, double eps);
+double bisection_method(double x1, double x2, double eps);
+double f(double x);
+
+int main()
+{
+    double st, et, x1, x2, root;
+    double eps = 0.000001;
+    int option;
+
+    do {
+        system("cls");
+        printf("x1: ");
+        scanf("%lf", &x1); getchar();
+        printf("x2: ");
+        scanf("%lf", &x2); getchar();
+    } while (f(x1) > 0 && f(x2) > 0 || f(x1) < 0 && f(x2) < 0);
+
+    do {
+        system("cls");
+        printf("[1] Secant method\n");
+        printf("[2] Bisection method\n");
+        printf(">> ");
+        scanf("%d", &option); getchar();
+    } while (option != 1 && option != 2);
+
+    if (option == 1)
+    {
+        st = clock();
+        root = secant_method(x1, x2, eps);
+        et = clock();
+    }
+    else
+    {
+        st = clock();
+        root = bisection_method(x1, x2, eps);
+        et = clock();
+    }
+    //system("cls");
+    printf("x = %lf; f(x) = %lf\n", root, f(root));
+    printf("time = %f sec\n", (et - st - pending_time) / 1000.0);
+    return 0;
+}
+
+double secant_method(double x1, double x2, double eps)
+{
+    double xi, f1, f2, fi, t;
+    int n = 1;
+    char choice = ' ';
+
+    do
+    {
+        f1 = f(x1);
+        f2 = f(x2);
+
+        xi = x2 - (x2 - x1) * f2 / (f2 - f1);
+        fi = f(xi);
+
+        x1 = x2;
+        x2 = xi;
+
+        t = clock();
+        printf("n = %d; xi = %lf; f(xi) = %lf\n", n, xi, f(xi));
+        pending_time += clock() - t;
+
+        if (n % 200 == 0 && n != 0)
+        {
+            t = clock();
+            printf("Continue? (y - yes): ");
+            scanf("%c", &choice); getchar();
+            pending_time += clock() - t;
+            if (choice != 'y')
+                break;
+            choice = ' ';
+        }
+        n++;
+    } while (fabs(fi) > eps);
+
+    return xi;
+}
+
+double bisection_method(double x1, double x2, double eps)
+{
+    double xi = 0, t;
+    int n = 1;
+    char choice = ' ';
+
+    do {
+        xi = (x1 + x2) / 2.0;
+
+        if (f(xi) > 0 && f(x1) > 0 || f(xi) < 0 && f(x1) < 0)
+            x1 = xi;
+        else
+            x2 = xi;
+
+        t = clock();
+        printf("n = %d; xi = %lf; f(xi) = %lf\n", n, xi, f(xi));
+        pending_time += clock() - t;
+
+        if (n % 200 == 0 && n != 0)
+        {
+            t = clock();
+            printf("Continue? (y - yes): ");
+            scanf("%c", &choice); getchar();
+            pending_time += clock() - t;
+            if (choice != 'y')
+                break;
+            choice = ' ';
+        }
+        n++;
+    } while (fabs(f(xi)) > eps);
+    return xi;
+}
+
+double f(double x)
+{
+    return x * x * x * x - 5 * x * x * x - 0.25 * x * x + 2;
+}
